@@ -1,0 +1,57 @@
+// Create the NSG, Add a rule
+{
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "WebNetworkSecurityGroup",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "webrule",
+            "properties": {
+              "description": "This rule allows traffic in on port 80",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "INTERNET",
+              "destinationAddressPrefix": "10.0.0.0/24",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+},
+
+
+
+// Bind the NSG to a subnet, by adding the following after the "prefix" statement in the subnet config
+	"networkSecurityGroup": {
+	 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'WebNetworkSecurityGroup')]"
+	}
+
+	
+	
+// It's good form to add this as a VM dependancy
+       "dependsOn": [
+       "[resourceId('Microsoft.Network/networkSecurityGroups', 'WebNetworkSecurityGroup')]"
+      ],
+
+	  
+	  
+// Add an RDP rule
+          {
+            "name": "rdprule",
+            "properties": {
+              "description": "This rule allows traffic on port 3389 from the web",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "INTERNET",
+              "destinationAddressPrefix": "10.0.0.0/24",
+              "access": "Allow",
+              "priority": 200,
+              "direction": "Inbound"
+            }
+      }
