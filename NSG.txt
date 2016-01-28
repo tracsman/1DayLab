@@ -1,4 +1,4 @@
-// Create the NSG, Add a rule
+// Create the NSG, Add a rule. It's easiest to add this as the first resource created to ensure you're not nesting it inside another resource below.
 {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Network/networkSecurityGroups",
@@ -33,7 +33,7 @@
 
 	
 	
-// It's good form to add this as a VM dependancy
+// It's good form to add this as a Virtual Network Dependancy (add this after the Name, Location, Type, and API lines)
        "dependsOn": [
        "[resourceId('Microsoft.Network/networkSecurityGroups', 'WebNetworkSecurityGroup')]"
       ],
