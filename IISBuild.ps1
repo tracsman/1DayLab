@@ -1,255 +1,93 @@
-<# 
- .SYNOPSIS
-  Example of Network Security Groups in an isolated network (Azure only, no hybrid connections)
+# IIS Server Post Build Config Script
+# Get Admin Account and Password
+    Write-Host "Please enter the admin account information used to create this VM:" -ForegroundColor Cyan
+    $theAdmin = Read-Host -Prompt "The Admin Account Name (no domain or machine name)"
+    $thePassword = Read-Host -Prompt "The Admin Password"
 
- .DESCRIPTION
-  This script will build out a sample DMZ setup containing:
-   - A default storage account for VM disks
-   - Two new cloud services
-   - Two Subnets (FrontEnd and BackEnd subnets)
-   - One server on the FrontEnd Subnet
-   - Three Servers on the BackEnd Subnet
-   - Network Security Groups to allow/deny traffic patterns as declared
+# Turn On ICMPv4
+    Write-Host "Creating ICMP Rule in Windows Firewall" -ForegroundColor Cyan
+    New-NetFirewallRule -Name Allow_ICMPv4 -DisplayName "Allow ICMPv4" -Protocol ICMPv4 -Enabled True -Profile Any -Action Allow
 
-  Before running script, ensure the network configuration file is created in
-  the directory referenced by $NetworkConfigFile variable (or update the
-  variable to reflect the path and file name of the config file being used).
+# Install IIS
+    Write-Host "Installing IIS and .Net 4.5, this can take some time, like 15+ minutes..." -ForegroundColor Cyan
+    add-windowsfeature Web-Server, Web-WebServer, Web-Common-Http, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-Static-Content, Web-Health, Web-Http-Logging, Web-Performance, Web-Stat-Compression, Web-Security, Web-Filtering, Web-App-Dev, Web-ISAPI-Ext, Web-ISAPI-Filter, Web-Net-Ext, Web-Net-Ext45, Web-Asp-Net45, Web-Mgmt-Tools, Web-Mgmt-Console
 
- .Notes
-  Security requirements are different for each use case and can be addressed in a
-  myriad of ways. Please be sure that any sensitive data or applications are behind
-  the appropriate layer(s) of protection. This script serves as an example of some
-  of the techniques that can be used, but should not be used for all scenarios. You
-  are responsible to assess your security needs and the appropriate protections
-  needed, and then effectively implement those protections.
+# Create Web App Pages
+    Write-Host "Creating Web page and Web.Config file" -ForegroundColor Cyan
+    $MainPage = '<%@ Page Language="vb" AutoEventWireup="false" %>
+    <%@ Import Namespace="System.IO" %>
+    <script language="vb" runat="server">
+        Protected Sub Page_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Load
+            Dim FILENAME As String = "\\10.0.2.5\WebShare\Rand.txt"
+            Dim objStreamReader As StreamReader
+            objStreamReader = File.OpenText(FILENAME)
+            Dim contents As String = objStreamReader.ReadToEnd()
+            lblOutput.Text = contents
+            objStreamReader.Close()
+            lblTime.Text = Now()
+        End Sub
+    </script>
 
-  FrontEnd Service (FrontEnd subnet 10.0.1.0/24)
-   IIS01      - 10.0.1.5
+    <!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    <head runat="server">
+        <title>DMZ Example App</title>
+    </head>
+    <body style="font-family: Optima,Segoe,Segoe UI,Candara,Calibri,Arial,sans-serif;">
+      <form id="frmMain" runat="server">
+        <div>
+          <h1>Looks like you made it!</h1>
+          This is a page from the inside (a web server on a private network),<br />
+          and it is making its way to the outside! (If you are viewing this from the internet)<br />
+          <br />
+          The following sections show:
+          <ul style="margin-top: 0px;">
+            <li> Local Server Time - Shows if this page is or isnt cached anywhere</li>
+            <li> File Output - Shows that the web server is reaching AppVM01 on the backend subnet and successfully returning content</li>
+            <li> Image from the Internet - Doesnt really show anything, but it made me happy to see this when the app worked</li>
+          </ul>
+          <div style="border: 2px solid #8AC007; border-radius: 25px; padding: 20px; margin: 10px; width: 650px;">
+            <b>Local Web Server Time</b>: <asp:Label runat="server" ID="lblTime" /></div>
+          <div style="border: 2px solid #8AC007; border-radius: 25px; padding: 20px; margin: 10px; width: 650px;">
+            <b>File Output from AppVM01</b>: <asp:Label runat="server" ID="lblOutput" /></div>
+          <div style="border: 2px solid #8AC007; border-radius: 25px; padding: 20px; margin: 10px; width: 650px;">
+            <b>Image File Linked from the Internet</b>:<br />
+            <br />
+            <img src="http://sd.keepcalm-o-matic.co.uk/i/keep-calm-you-made-it-7.png" alt="You made it!" width="150" length="175"/></div>
+        </div>
+      </form>
+    </body>
+    </html>'
 
-  BackEnd Service (BackEnd subnet 10.0.2.0/24)
-   DNS01      - 10.0.2.4
-   AppVM01    - 10.0.2.5
-   AppVM02    - 10.0.2.6
+    $WebConfig ='<?xml version="1.0" encoding="utf-8"?>
+    <configuration>
+      <system.web>
+        <compilation debug="true" strict="false" explicit="true" targetFramework="4.5" />
+        <httpRuntime targetFramework="4.5" />
+        <identity impersonate="true" />
+        <customErrors mode="Off"/>
+      </system.web>
+      <system.webServer>
+        <defaultDocument>
+          <files>
+            <add value="Home.aspx" />
+          </files>
+        </defaultDocument>
+      </system.webServer>
+    </configuration>'
 
-#>
+    $MainPage | Out-File -FilePath "C:\inetpub\wwwroot\Home.aspx" -Encoding ascii
+    $WebConfig | Out-File -FilePath "C:\inetpub\wwwroot\Web.config" -Encoding ascii
 
-# Fixed Variables
-    $LocalAdminPwd = Read-Host -Prompt "Enter Local Admin Password to be used for all VMs"
-    $VMName = @()
-    $ServiceName = @()
-    $VMFamily = @()
-    $img = @()
-    $size = @()
-    $SubnetName = @()
-    $VMIP = @()
+# Set App Pool to Clasic Pipeline to remote file access will work easier
+    Write-Host "Updaing IIS Settings" -ForegroundColor Cyan
+    c:\windows\system32\inetsrv\appcmd.exe set app "Default Web Site/" /applicationPool:".NET v4.5 Classic"
+    c:\windows\system32\inetsrv\appcmd.exe set config "Default Web Site/" /section:system.webServer/security/authentication/anonymousAuthentication /userName:$theAdmin /password:$thePassword /commit:apphost
 
-# User Defined Global Variables
-  # These should be changes to reflect your subscription and services
-  # Invalid options will fail in the validation section
+# Make sure the IIS settings take
+    Write-Host "Restarting the W3SVC" -ForegroundColor Cyan
+    Restart-Service -Name W3SVC
 
-  # Subscription Access Details
-    $subID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-
-  # VM Account, Location, and Storage Details
-    $LocalAdmin = "theAdmin"
-    $DeploymentLocation = "Central US"
-    $StorageAccountName = "vmstore02"
-
-  # Service Details
-    $FrontEndService = "FrontEnd001"
-    $BackEndService = "BackEnd001"
-
-  # Network Details
-    $VNetName = "CorpNetwork"
-    $FESubnet = "FrontEnd"
-    $FEPrefix = "10.0.1.0/24"
-    $BESubnet = "BackEnd"
-    $BEPrefix = "10.0.2.0/24"
-    $NetworkConfigFile = "C:\Scripts\NetworkConf1.xml"
-
-  # VM Base Disk Image Details
-    $SrvImg = Get-AzureVMImage | Where {$_.ImageFamily -match 'Windows Server 2012 R2 Datacenter'} | sort PublishedDate -Descending | Select ImageName -First 1 | ForEach {$_.ImageName}
-
-  # NSG Details
-    $NSGName = "MyVNetSG"
-
-# User Defined VM Specific Config
-    # Note: To ensure proper NSG Rule creation later in this script:
-    #       - The Web Server must be VM 0
-    #       - The AppVM1 Server must be VM 1
-    #       - The DNS server must be VM 3
-    #
-    #       Otherwise the NSG rules in the last section of this
-    #       script will need to be changed to match the modified
-    #       VM array numbers ($i) so the NSG Rule IP addresses
-    #       are aligned to the associated VM IP addresses.
-
-    # VM 0 - The Web Server
-      $VMName += "IIS01"
-      $ServiceName += $FrontEndService
-      $VMFamily += "Windows"
-      $img += $SrvImg
-      $size += "Standard_D3"
-      $SubnetName += $FESubnet
-      $VMIP += "10.0.1.5"
-
-    # VM 1 - The First Application Server
-      $VMName += "AppVM01"
-      $ServiceName += $BackEndService
-      $VMFamily += "Windows"
-      $img += $SrvImg
-      $size += "Standard_D3"
-      $SubnetName += $BESubnet
-      $VMIP += "10.0.2.5"
-
-    # VM 2 - The Second Application Server
-      $VMName += "AppVM02"
-      $ServiceName += $BackEndService
-      $VMFamily += "Windows"
-      $img += $SrvImg
-      $size += "Standard_D3"
-      $SubnetName += $BESubnet
-      $VMIP += "10.0.2.6"
-
-    # VM 3 - The DNS Server
-      $VMName += "DNS01"
-      $ServiceName += $BackEndService
-      $VMFamily += "Windows"
-      $img += $SrvImg
-      $size += "Standard_D3"
-      $SubnetName += $BESubnet
-      $VMIP += "10.0.2.4"
-
-# ----------------------------- #
-# No User Defined Varibles or   #
-# Configuration past this point #
-# ----------------------------- #   
-
-  # Get your Azure accounts
-    Add-AzureAccount
-    Set-AzureSubscription –SubscriptionId $subID -ErrorAction Stop
-    Select-AzureSubscription -SubscriptionId $subID -Current -ErrorAction Stop
-
-  # Create Storage Account
-    If (Test-AzureName -Storage -Name $StorageAccountName) { 
-        Write-Host "Fatal Error: This storage account name is already in use, please pick a diffrent name." -ForegroundColor Red
-        Return}
-    Else {Write-Host "Creating Storage Account" -ForegroundColor Cyan 
-          New-AzureStorageAccount -Location $DeploymentLocation -StorageAccountName $StorageAccountName}
-
-  # Update Subscription Pointer to New Storage Account
-    Write-Host "Updating Subscription Pointer to New Storage Account" -ForegroundColor Cyan 
-    Set-AzureSubscription –SubscriptionId $subID -CurrentStorageAccountName $StorageAccountName -ErrorAction Stop
-
-# Validation
-$FatalError = $false
-
-If (-Not (Get-AzureLocation | Where {$_.DisplayName -eq $DeploymentLocation})) {
-     Write-Host "This Azure Location was not found or available for use" -ForegroundColor Yellow
-     $FatalError = $true}
-
-If (Test-AzureName -Service -Name $FrontEndService) { 
-    Write-Host "The FrontEndService service name is already in use, please pick a different service name." -ForegroundColor Yellow
-    $FatalError = $true}
-Else { Write-Host "The FrontEndService service name is valid for use." -ForegroundColor Green}
-
-If (Test-AzureName -Service -Name $BackEndService) { 
-    Write-Host "The BackEndService service name is already in use, please pick a different service name." -ForegroundColor Yellow
-    $FatalError = $true}
-Else { Write-Host "The BackEndService service name is valid for use." -ForegroundColor Green}
-
-If (-Not (Test-Path $NetworkConfigFile)) { 
-    Write-Host 'The network config file was not found, please update the $NetworkConfigFile variable to point to the network config xml file.' -ForegroundColor Yellow
-    $FatalError = $true}
-Else { Write-Host "The network config file was found" -ForegroundColor Green
-        If (-Not (Select-String -Pattern $DeploymentLocation -Path $NetworkConfigFile)) {
-            Write-Host 'The deployment location was not found in the network config file, please check the network config file to ensure the $DeploymentLocation varible is correct and the netowrk config file matches.' -ForegroundColor Yellow
-            $FatalError = $true}
-        Else { Write-Host "The deployment location was found in the network config file." -ForegroundColor Green}}
-
-If ($FatalError) {
-    Write-Host "A fatal error has occured, please see the above messages for more information." -ForegroundColor Red
-    Return}
-Else { Write-Host "Validation passed, now building the environment." -ForegroundColor Green}
-
-# Create VNET
-    Write-Host "Creating VNET" -ForegroundColor Cyan 
-    Set-AzureVNetConfig -ConfigurationPath $NetworkConfigFile -ErrorAction Stop
-
-# Create Services
-    Write-Host "Creating Services" -ForegroundColor Cyan
-    New-AzureService -Location $DeploymentLocation -ServiceName $FrontEndService -ErrorAction Stop
-    New-AzureService -Location $DeploymentLocation -ServiceName $BackEndService -ErrorAction Stop
-
-# Build VMs
-    $i=0
-    $VMName | Foreach {
-        Write-Host "Building $($VMName[$i])" -ForegroundColor Cyan
-        New-AzureVMConfig -Name $VMName[$i] -ImageName $img[$i] –InstanceSize $size[$i] | `
-            Add-AzureProvisioningConfig -Windows -AdminUsername $LocalAdmin -Password $LocalAdminPwd  | `
-            Set-AzureSubnet  –SubnetNames $SubnetName[$i] | `
-            Set-AzureStaticVNetIP -IPAddress $VMIP[$i] | `
-            Set-AzureVMMicrosoftAntimalwareExtension -AntimalwareConfiguration '{"AntimalwareEnabled" : true}' | `
-            Remove-AzureEndpoint -Name "PowerShell" | `
-            New-AzureVM –ServiceName $ServiceName[$i] -VNetName $VNetName -Location $DeploymentLocation
-            # Note: A Remote Desktop endpoint is automatically created when each VM is created.
-        $i++
-    }
-    # Add HTTP Endpoint for IIS01
-    Get-AzureVM -ServiceName $ServiceName[0] -Name $VMName[0] | Add-AzureEndpoint -Name HTTP -Protocol tcp -LocalPort 80 -PublicPort 80 | Update-AzureVM
-
-# Configure NSG
-    Write-Host "Configuring the Network Security Group (NSG)" -ForegroundColor Cyan
-
-  # Build the NSG
-    Write-Host "Building the NSG" -ForegroundColor Cyan
-    New-AzureNetworkSecurityGroup -Name $NSGName -Location $DeploymentLocation -Label "Security group for $VNetName subnets in $DeploymentLocation"
-
-  # Add NSG Rules
-    Write-Host "Writing rules into the NSG" -ForegroundColor Cyan
-    Get-AzureNetworkSecurityGroup -Name $NSGName | Set-AzureNetworkSecurityRule -Name "Enable Internal DNS" -Type Inbound -Priority 100 -Action Allow `
-        -SourceAddressPrefix VIRTUAL_NETWORK -SourcePortRange '*' `
-        -DestinationAddressPrefix $VMIP[3] -DestinationPortRange '53' `
-        -Protocol *
-
-    Get-AzureNetworkSecurityGroup -Name $NSGName | Set-AzureNetworkSecurityRule -Name "Enable RDP to $VNetName VNet" -Type Inbound -Priority 110 -Action Allow `
-        -SourceAddressPrefix INTERNET -SourcePortRange '*' `
-        -DestinationAddressPrefix VIRTUAL_NETWORK -DestinationPortRange '3389' `
-        -Protocol *
-
-    Get-AzureNetworkSecurityGroup -Name $NSGName | Set-AzureNetworkSecurityRule -Name "Enable Internet to $($VMName[0])" -Type Inbound -Priority 120 -Action Allow `
-        -SourceAddressPrefix Internet -SourcePortRange '*' `
-        -DestinationAddressPrefix $VMIP[0] -DestinationPortRange '*' `
-        -Protocol *
-
-    Get-AzureNetworkSecurityGroup -Name $NSGName | Set-AzureNetworkSecurityRule -Name "Enable $($VMName[0]) to $($VMName[1])" -Type Inbound -Priority 130 -Action Allow `
-        -SourceAddressPrefix $VMIP[0] -SourcePortRange '*' `
-        -DestinationAddressPrefix $VMIP[1] -DestinationPortRange '*' `
-        -Protocol *
-
-    Get-AzureNetworkSecurityGroup -Name $NSGName | Set-AzureNetworkSecurityRule -Name "Isolate the $VNetName VNet from the Internet" -Type Inbound -Priority 140 -Action Deny `
-        -SourceAddressPrefix INTERNET -SourcePortRange '*' `
-        -DestinationAddressPrefix VIRTUAL_NETWORK -DestinationPortRange '*' `
-        -Protocol *
-
-    Get-AzureNetworkSecurityGroup -Name $NSGName | Set-AzureNetworkSecurityRule -Name "Isolate the $FESubnet subnet from the $BESubnet subnet" -Type Inbound -Priority 150 -Action Deny `
-        -SourceAddressPrefix $FEPrefix -SourcePortRange '*' `
-        -DestinationAddressPrefix $BEPrefix -DestinationPortRange '*' `
-        -Protocol *
-
-    # Assign the NSG to the Subnets
-        Write-Host "Binding the NSG to both subnets" -ForegroundColor Cyan
-        Set-AzureNetworkSecurityGroupToSubnet -Name $NSGName -SubnetName $FESubnet -VirtualNetworkName $VNetName
-        Set-AzureNetworkSecurityGroupToSubnet -Name $NSGName -SubnetName $BESubnet -VirtualNetworkName $VNetName
-
-# Optional Post-script Manual Configuration
-  # Install Test Web App (Run Post-Build Script on the IIS Server)
-  # Install Backend resource (Run Post-Build Script on the AppVM01)
-  Write-Host
-  Write-Host "Build Complete!" -ForegroundColor Green
-  Write-Host
-  Write-Host "Optional Post-script Manual Configuration Steps" -ForegroundColor Gray
-  Write-Host " - Install Test Web App (Run Post-Build Script on the IIS Server)" -ForegroundColor Gray
-  Write-Host " - Install Backend resource (Run Post-Build Script on the AppVM01)" -ForegroundColor Gray
-  Write-Host
-  
+    Write-Host
+    Write-Host "Web App Creation Successfull!" -ForegroundColor Green
+    Write-Host
