@@ -3,7 +3,7 @@
 # 3. Run script
 # 4. Scrape data from log files
 
-$RemoteHost = "10.138.5.50"
+$RemoteHost = "10.10.0.4"
 $FileArray = "P00", "P01", "P06", "P16", "P17", "P32"
 #$FileArray = "P01"
 
@@ -44,7 +44,7 @@ ForEach ($FilePrefix in $FileArray) {
     
     # Start PSPing
     $FileName=$env:USERPROFILE+"\"+$FilePrefix+"ping.log"
-    $HostPort = $RemoteHost+":22"
+    $HostPort = $RemoteHost+":3389"
     $iPerfJob = Start-Job -ScriptBlock {C:\tools\psping.exe -n 60s -4 $args[0] > $args[1]} -Name 'Jon.PSPing' -ArgumentList "$HostPort", "$FileName"
 
     # Wait for jobs to finish
