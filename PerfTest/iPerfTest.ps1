@@ -3,6 +3,16 @@
 # 3. Run script
 # 4. Scrape data from log files
 
+# Feature Backlog
+# Add Param for remote hostAdd Param for Win/Linux (default Win, port 3389)Add Param for Duration (default 60 seconds)
+# Check for FW rulesApply if not found
+# Check for Tools dirDownload if not found
+# Check for bitsDownload if not found
+# Validate PSPing connectivity (two ping)Error Stop
+# Validate iPerf3 connectivity (two ping)Error Stop
+# Correct invalid warning about the Jon.IPerf3 job not found, ignore if not found
+
+
 $RemoteHost = "10.10.0.4"
 $FileArray = "P00", "P01", "P06", "P16", "P17", "P32"
 #$FileArray = "P01"
