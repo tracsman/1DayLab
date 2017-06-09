@@ -13,7 +13,7 @@
 # Correct invalid warning about the Jon.IPerf3 job not found, ignore if not found
 
 
-$RemoteHost = "10.10.0.4"
+$RemoteHost = "10.100.20.21"
 $FileArray = "P00", "P01", "P06", "P16", "P17", "P32"
 #$FileArray = "P01"
 
