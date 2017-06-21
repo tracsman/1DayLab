@@ -1,4 +1,28 @@
-﻿# 1. Start iPerf in server mode on remote host
+﻿# Temp
+#
+# Parameters: 
+#     RemoteHost [IP Address]
+#     HostType [String], Windows or Linix, defines port to use with PSPing [3389 or 22]
+#     TestLength [Int], Seconds to run ping test, default = 60
+#
+# Initialize
+# Validate Firewall rules -> stop with run instal message if error
+# Validate required files -> stop with run instal message if error
+# Pause for iPerf server mode warning
+# Check remote PSPing
+# Check remote iPerf3
+# Clear old log data
+# Main Test Loop
+    # Start iPerf if required
+    # Start PSPing
+    # Wait for jobs to finish
+# Parse each job file for data
+# Output results
+
+
+
+
+# 1. Start iPerf in server mode on remote host
 # 2. Set Remote Host ip address
 # 3. Run script
 # 4. Scrape data from log files
@@ -12,6 +36,8 @@
 # Validate iPerf3 connectivity (two ping)Error Stop
 # Correct invalid warning about the Jon.IPerf3 job not found, ignore if not found
 
+# https://live.sysinternals.com/psping.exe 
+# https://iperf.fr/download/windows/iperf-3.1.3-win64.zip
 
 $RemoteHost = "10.100.20.21"
 $FileArray = "P00", "P01", "P06", "P16", "P17", "P32"
