@@ -21,9 +21,9 @@
 # 5. Update path <<stretch>>
 
 # 1. Initialize
-$ToolPath = "C:\ExRTools"
+$ToolPath = "C:\ACTTools\"
 
-# 1. Create C:\ExRTools
+# 1. Create C:\ACTTools
 If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolPath | Out-Null}
 
 # 2. Copy iPerf and PSPing
@@ -50,7 +50,7 @@ If ($FileName.Count -gt 0) {
 }
 
 # 3. Kill PSPing popup
-C:\Tools\psping.exe -accepteula | Out-Null
+C:\ACTTools\psping.exe -accepteula | Out-Null
 
 # 4. Open Firewall rules
 If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
