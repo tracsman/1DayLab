@@ -14,6 +14,7 @@
     #    7.1 iPerf3 log file line loop
     #    7.2 PSPing log file line loop
     #    7.3 Get Percentile values
+    #    7.4 Add results to object array
     # 8. Output results
 
     # Feature Backlog
@@ -311,21 +312,18 @@
         # Remove the warm up ping and sort the arrary
         $PingArray.RemoveAt(0)
         $SortedArrary = $PingArray | Sort-Object
-
-        # Pick the Median
-        If ($SortedArrary.count%2) {
-            #odd
-            $medianvalue = $SortedArrary[[math]::Floor($SortedArrary.count/2)]
-        }
-        Else {
-            #even
-            $MedianValue = ($SortedArrary[$SortedArrary.Count/2],$SortedArrary[$SortedArrary.count/2-1] |measure -Average).average
-        } # End If
-
-
         # http://www.dummies.com/education/math/statistics/how-to-calculate-percentiles-in-statistics/
+        # Pick 50th Percentile
+        If ($SortedArrary.count%.5) {$PingP50 = $SortedArrary[[math]::Ceiling($SortedArrary.count*.5)]}
+        Else {$PingP50 = ($SortedArrary[$SortedArrary.Count*.5] + $SortedArrary[$SortedArrary.count*.5-1])/2}
+        # Pick 90th Percentile
+        If ($SortedArrary.count%.9) {$PingP90 = $SortedArrary[[math]::Ceiling($SortedArrary.count*.9)]}
+        Else {$PingP90 = ($SortedArrary[$SortedArrary.Count*.9] + $SortedArrary[$SortedArrary.count*.9-1])/2}
+        # Pick 95th Percentile
+        If ($SortedArrary.count%.95) {$PingP95 = $SortedArrary[[math]::Ceiling($SortedArrary.count*.95)]}
+        Else {$PingP95 = ($SortedArrary[$SortedArrary.Count*.95] + $SortedArrary[$SortedArrary.count*.95-1])/2}
 
-
+        # 7.4 Add results to object array
         $Test = New-Object -TypeName PSObject
         $Test | Add-Member -Name 'Name' -MemberType NoteProperty -Value $TestName
         $Test | Add-Member -Name 'Bandwidth' -MemberType NoteProperty -Value $TPut
@@ -341,9 +339,9 @@
         $TestResults += $Test
     }
 
-    If ($VerbosePreference) {$TestResults}
-    Else {$TestResults | Select Name, Bandwidth, Loss, P50}
-    
+    # 8. Output results
+    If ($VerbosePreference) {Write-Output $TestResults }
+    Else {Write-Output $TestResults | Select Name, Bandwidth, Loss, P50}
 
 } # End Function
 
