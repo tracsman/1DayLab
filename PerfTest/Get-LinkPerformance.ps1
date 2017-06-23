@@ -1,6 +1,4 @@
 ﻿function Get-LinkPerformance {
-    # Temp
-    #
     # 1. Evaluate and Set input parameters
     # 2. Initialize
     # 3. Clear old run files
@@ -17,8 +15,6 @@
     #    7.4 Add results to object array
     # 8. Output results
 
-    # Feature Backlog
-    # Kill any running jobs before starting (in step 2)
 
     # File links
     # https://live.sysinternals.com/psping.exe 
@@ -114,12 +110,13 @@
        [ValidateSet(“Windows”,”Linux”)]
        [string]$RemoteHostOS="Windows",
        [ValidateRange(10,3600)] 
-       [int]$TestSeconds=60
+       [int]$TestSeconds=60,
+       [switch]$DetailedOutput=$false
     )
 
     # 2. Initialize
     $WebSource = "https://github.com/Azure/NetworkMonitoring"
-    $Verbose = $VerbosePreference -ne [System.Management.Automation.ActionPreference]::SilentlyContinue
+    #$Verbose = $VerbosePreference -ne [System.Management.Automation.ActionPreference]::SilentlyContinue
     $FileArray = "P00", "P01", "P06", "P16", "P17", "P32"
     $PingDuration = $TestSeconds
     $LoadDuration = $TestSeconds + 10
@@ -129,6 +126,7 @@
     #$FileArray = "P01"
 
     # 3. Clear old run files
+    Remove-Job -Name ACT.LinkPerf -Force -ErrorAction SilentlyContinue
     If (Test-Path "$env:USERPROFILE\TestPing.log"){Remove-Item "$env:USERPROFILE\TestPing.log"}
     If (Test-Path "$env:USERPROFILE\TestPerf.log"){Remove-Item "$env:USERPROFILE\TestPerf.log"}
     If (Test-Path "$env:USERPROFILE\P*ping.log"){Remove-Item "$env:USERPROFILE\P*ping.log"}
@@ -234,12 +232,13 @@
             Start-Sleep 1
         } # End For
         While ((Get-Job -Name 'ACT.LinkPerf' -ErrorAction SilentlyContinue | Where State -eq 'Running').Count -gt 0) {
-            Write-Host "Waiting for job threads to finish..."
+            Write-Verbose "Waiting for job threads to finish..."
             Sleep 2
         } # End While
     } # End For
  
     Write-Host "All Done!" -ForegroundColor Cyan
+    Write-Verbose "All Done!"
 
     # 7. Parse each job file for data
     $TestResults=@()
@@ -314,13 +313,13 @@
         $SortedArrary = $PingArray | Sort-Object
         # http://www.dummies.com/education/math/statistics/how-to-calculate-percentiles-in-statistics/
         # Pick 50th Percentile
-        If ($SortedArrary.count%.5) {$PingP50 = $SortedArrary[[math]::Ceiling($SortedArrary.count*.5)]}
+        If ($SortedArrary.count%.5) {$PingP50 = $SortedArrary[[math]::Ceiling($SortedArrary.count*.5)-1]}
         Else {$PingP50 = ($SortedArrary[$SortedArrary.Count*.5] + $SortedArrary[$SortedArrary.count*.5-1])/2}
         # Pick 90th Percentile
-        If ($SortedArrary.count%.9) {$PingP90 = $SortedArrary[[math]::Ceiling($SortedArrary.count*.9)]}
+        If ($SortedArrary.count%.9) {$PingP90 = $SortedArrary[[math]::Ceiling($SortedArrary.count*.9)-1]}
         Else {$PingP90 = ($SortedArrary[$SortedArrary.Count*.9] + $SortedArrary[$SortedArrary.count*.9-1])/2}
         # Pick 95th Percentile
-        If ($SortedArrary.count%.95) {$PingP95 = $SortedArrary[[math]::Ceiling($SortedArrary.count*.95)]}
+        If ($SortedArrary.count%.95) {$PingP95 = $SortedArrary[[math]::Ceiling($SortedArrary.count*.95)-1]}
         Else {$PingP95 = ($SortedArrary[$SortedArrary.Count*.95] + $SortedArrary[$SortedArrary.count*.95-1])/2}
 
         # 7.4 Add results to object array
@@ -328,10 +327,10 @@
         $Test | Add-Member -Name 'Name' -MemberType NoteProperty -Value $TestName
         $Test | Add-Member -Name 'Bandwidth' -MemberType NoteProperty -Value $TPut
         $Test | Add-Member -Name 'Count' -MemberType NoteProperty -Value $PingSent
-        $Test | Add-Member -Name 'Loss' -MemberType NoteProperty -Value $Loss
-        $Test | Add-Member -Name 'P50' -MemberType NoteProperty -Value $PingP50
-        $Test | Add-Member -Name 'P90' -MemberType NoteProperty -Value $PingP90
-        $Test | Add-Member -Name 'P95' -MemberType NoteProperty -Value $PingP95
+        $Test | Add-Member -Name 'Loss' -MemberType NoteProperty -Value $PingLoss
+        $Test | Add-Member -Name 'P50' -MemberType NoteProperty -Value $PingP50'ms'
+        $Test | Add-Member -Name 'P90' -MemberType NoteProperty -Value $PingP90'ms'
+        $Test | Add-Member -Name 'P95' -MemberType NoteProperty -Value $PingP95'ms'
         $Test | Add-Member -Name 'Avg' -MemberType NoteProperty -Value $PingAvg
         $Test | Add-Member -Name 'Min' -MemberType NoteProperty -Value $PingMin
         $Test | Add-Member -Name 'Max' -MemberType NoteProperty -Value $PingMax
@@ -340,9 +339,9 @@
     }
 
     # 8. Output results
-    If ($VerbosePreference) {Write-Output $TestResults }
-    Else {Write-Output $TestResults | Select Name, Bandwidth, Loss, P50}
+    If ($DetailedOutput) {Write-Output $TestResults | ft}
+    Else {Write-Output $TestResults | Select Name, Bandwidth, Loss, P50 | ft}
 
 } # End Function
 
-Get-LinkPerformance -RemoteHost 127.0.0.1 -TestSeconds 10 -Verbose
+Get-LinkPerformance -RemoteHost 127.0.0.1 -TestSeconds 10 -DetailedOutput -Verbose
