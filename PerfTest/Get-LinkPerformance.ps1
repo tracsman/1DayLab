@@ -185,7 +185,8 @@
          - Ensure PSPing.exe is installed in C:\ACTTools, if not rerun the Install-LinkPerformance.ps1
 
         See $WebSource for more information."
-        Return } # End If
+        Return
+        } # End If
 
 
     # 6. Main Test Loop
@@ -230,12 +231,12 @@
             $message = "{0:p0} complete, remaining time {1}" -f $percentage, $remaining
             Write-Progress -Activity $message -PercentComplete ($percentage * 100) -CurrentOperation $TestName
             Start-Sleep 1
-        } # End For
+            } # End Foreach
         While ((Get-Job -Name 'ACT.LinkPerf' -ErrorAction SilentlyContinue | Where State -eq 'Running').Count -gt 0) {
             Write-Verbose "Waiting for job threads to finish..."
             Sleep 2
-        } # End While
-    } # End For
+            } # End While
+        } # End For
  
     Write-Host "All Done!" -ForegroundColor Cyan
     Write-Verbose "All Done!"
@@ -252,7 +253,7 @@
             "P17" {$TestName = "16 Sessions with 1Mb window"}
             "P32" {$TestName = "32 Sessions"}
             default {}
-        }
+        } # End Switch
 
         # 7.1 iPerf3 log file line loop
         $FileName = $env:USERPROFILE + "\" + $FilePrefix + "perf.log"
@@ -336,7 +337,7 @@
         $Test | Add-Member -Name 'Max' -MemberType NoteProperty -Value $PingMax
         
         $TestResults += $Test
-    }
+    } # End Foreach
 
     # 8. Output results
     If ($DetailedOutput) {Write-Output $TestResults | ft}
