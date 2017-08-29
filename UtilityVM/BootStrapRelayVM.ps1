@@ -6,7 +6,7 @@ Try {
     Write-Host "To: $Local"
     $webClient.DownloadFile( $uri, $Local )
     }
-\\hanatdi.com\Home\jon.ormond\Desktop
+
 Catch {
     Write-Warning "Something bad happened with the download. Most likely either files are missing or you don't have internet access. Please try again, or contact your administrator."
     Return
