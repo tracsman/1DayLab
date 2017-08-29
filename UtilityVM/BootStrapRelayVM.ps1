@@ -11,6 +11,7 @@ Write-Host "3"
         Write-Host $uri + $File
         Write-Host $LocPath + $File 
         $webClient = new-object System.Net.WebClient
+        Write-Host "4"
         $webClient.DownloadFile( $uri + $File, $LocPath + $File )
         }
     }
