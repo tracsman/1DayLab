@@ -5,7 +5,7 @@ $FileName += 'ChromeSetup.exe'
 
 Try {
     $File = 'ChromeSetup.exe'
-    $uri = 'https://raw.githubusercontent.com/tracsman/1DayLab/DontLook/PerfTest/'
+    $uri = 'https://raw.githubusercontent.com/tracsman/1DayLab/DontLook/UtilityVM/'
     $LocPath = $env:USERPROFILE + "\Desktop\"
 
     ForEach ($File in $FileName) {
