@@ -12,6 +12,8 @@ If (-Not (Test-Path $ToolPath+"Wireshark-win64-2.2.4.exe")){$FileName += 'Wiresh
 If (-Not (Test-Path $ToolPath+"ipscan24.exe")){$FileName += 'ipscan24.exe'}
 If (-Not (Test-Path $ToolPath+"pingplotter_install.exe")){$FileName += 'pingplotter_install.exe'}
 If (-Not (Test-Path $ToolPath+"putty.exe")){$FileName += 'putty.exe'}
+If (-Not (Test-Path $ToolPath+"iperf-3.1.3-50.1.x86_64.rpm")){$FileName += 'iperf-3.1.3-50.1.x86_64.rpm'}
+If (-Not (Test-Path $ToolPath+"libiperf0-3.1.3-50.1.x86_64.rpm")){$FileName += 'libiperf0-3.1.3-50.1.x86_64.rpm'}
 
 # 4. Copy files from GitHUb
 If ($FileName.Count -gt 0) {
