@@ -18,7 +18,7 @@ If (-Not (Test-Path $ToolPath+"iPerf SuSE\README.md")){$FileName += 'iPerf SuSE/
 If (-Not (Test-Path $ToolPath+"iPerf SuSE\iperf-3.1.3-50.1.x86_64.rpm")){$FileName += 'iPerf SuSE/iperf-3.1.3-50.1.x86_64.rpm'}
 If (-Not (Test-Path $ToolPath+"iPerf SuSE\libiperf0-3.1.3-50.1.x86_64.rpm")){$FileName += 'iPerf SuSE/libiperf0-3.1.3-50.1.x86_64.rpm'}
 If (-Not (Test-Path $ToolPath+"iPerf RHEL\README.md")){$FileName += 'iPerf RHEL/README.md'}
-If (-Not (Test-Path $ToolPath+"iPerf RHEL\libiperf0-3.1.3-50.1.x86_64.rpm")){$FileName += 'iPerf RHEL/libiperf0-3.1.3-50.1.x86_64.rpm'}
+If (-Not (Test-Path $ToolPath+"iPerf RHEL\iperf3-3.1.3-1.fc24.x86_64.rpm")){$FileName += 'iPerf RHEL/iperf3-3.1.3-1.fc24.x86_64.rpm'}
 
 
 # 4. Copy files from GitHUb
