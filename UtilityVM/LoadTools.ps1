@@ -7,7 +7,7 @@ If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolP
 # 3. Load file names to copy
 $FileName = @()
 If (-Not (Test-Path $ToolPath+"ChromeSetup.exe")){$FileName += 'ChromeSetup.exe'}
-If (-Not (Test-Path $ToolPath+"WinSCP-5.9.3-Setup.exe")){$FileName += 'WinSCP-5.9.3-Setup.exe'}
+If (-Not (Test-Path $ToolPath+"WinSCP-5.13-Setup.exe")){$FileName += 'WinSCP-5.13-Setup.exe'}
 If (-Not (Test-Path $ToolPath+"Wireshark-win64-2.2.4.exe")){$FileName += 'Wireshark-win64-2.2.4.exe'}
 If (-Not (Test-Path $ToolPath+"ipscan24.exe")){$FileName += 'ipscan24.exe'}
 If (-Not (Test-Path $ToolPath+"pingplotter_install.exe")){$FileName += 'pingplotter_install.exe'}
