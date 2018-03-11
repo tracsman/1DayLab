@@ -29,5 +29,4 @@ If ($FileName.Count -gt 0) {
 } # End If
 
 # 5. Move Putty front and center
-If (-Not (Test-Path (([Environment]::GetFolderPath("Desktop"))"\Putty.exe"))){Copy-Item $ToolPath"Putty.exe" -Destination ([Environment]::GetFolderPath("Desktop")) }
-
+If (-Not (Test-Path ([Environment]::GetFolderPath("Desktop")+"\Putty.exe"))){Copy-Item $ToolPath"Putty.exe" -Destination ([Environment]::GetFolderPath("Desktop")) }
