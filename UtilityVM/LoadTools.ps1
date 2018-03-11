@@ -3,6 +3,8 @@ $ToolPath = "C:\Bin\"
 
 # 2. Create C:\Bin
 If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolPath | Out-Null}
+If (-Not (Test-Path $ToolPath+"iPerf RHEL")){New-Item -ItemType Directory -Force -Path $ToolPath"iPerf RHEL" | Out-Null}
+If (-Not (Test-Path $ToolPath+"iPerf SuSE")){New-Item -ItemType Directory -Force -Path $ToolPath"iPerf SuSE" | Out-Null}
 
 # 3. Load file names to copy
 $FileName = @()
@@ -12,8 +14,12 @@ If (-Not (Test-Path $ToolPath+"Wireshark-win64-2.2.4.exe")){$FileName += 'Wiresh
 If (-Not (Test-Path $ToolPath+"ipscan24.exe")){$FileName += 'ipscan24.exe'}
 If (-Not (Test-Path $ToolPath+"pingplotter_install.exe")){$FileName += 'pingplotter_install.exe'}
 If (-Not (Test-Path $ToolPath+"putty.exe")){$FileName += 'putty.exe'}
-If (-Not (Test-Path $ToolPath+"iperf-3.1.3-50.1.x86_64.rpm")){$FileName += 'iperf-3.1.3-50.1.x86_64.rpm'}
-If (-Not (Test-Path $ToolPath+"libiperf0-3.1.3-50.1.x86_64.rpm")){$FileName += 'libiperf0-3.1.3-50.1.x86_64.rpm'}
+If (-Not (Test-Path $ToolPath+"iPerf SuSE\README.md")){$FileName += 'iPerf SuSE/README.md'}
+If (-Not (Test-Path $ToolPath+"iPerf SuSE\iperf-3.1.3-50.1.x86_64.rpm")){$FileName += 'iPerf SuSE/iperf-3.1.3-50.1.x86_64.rpm'}
+If (-Not (Test-Path $ToolPath+"iPerf SuSE\libiperf0-3.1.3-50.1.x86_64.rpm")){$FileName += 'iPerf SuSE/libiperf0-3.1.3-50.1.x86_64.rpm'}
+If (-Not (Test-Path $ToolPath+"iPerf RHEL\README.md")){$FileName += 'iPerf RHEL/README.md'}
+If (-Not (Test-Path $ToolPath+"iPerf RHEL\libiperf0-3.1.3-50.1.x86_64.rpm")){$FileName += 'iPerf RHEL/libiperf0-3.1.3-50.1.x86_64.rpm'}
+
 
 # 4. Copy files from GitHUb
 If ($FileName.Count -gt 0) {
