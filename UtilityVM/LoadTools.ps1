@@ -6,12 +6,12 @@ If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolP
 
 # 3. Load file names to copy
 $FileName = @()
-If (-Not (Test-Path $ToolPath + "ChromeSetup.exe")){$FileName += 'ChromeSetup.exe'}
-If (-Not (Test-Path $ToolPath + "WinSCP-5.9.3-Setup.exe")){$FileName += 'WinSCP-5.9.3-Setup.exe'}
-If (-Not (Test-Path $ToolPath + "Wireshark-win64-2.2.4.exe")){$FileName += 'Wireshark-win64-2.2.4.exe'}
-If (-Not (Test-Path $ToolPath + "ipscan24.exe")){$FileName += 'ipscan24.exe'}
-If (-Not (Test-Path $ToolPath + "pingplotter_install.exe")){$FileName += 'pingplotter_install.exe'}
-If (-Not (Test-Path $ToolPath + "putty.exe")){$FileName += 'putty.exe'}
+If (-Not (Test-Path $ToolPath+"ChromeSetup.exe")){$FileName += 'ChromeSetup.exe'}
+If (-Not (Test-Path $ToolPath+"WinSCP-5.9.3-Setup.exe")){$FileName += 'WinSCP-5.9.3-Setup.exe'}
+If (-Not (Test-Path $ToolPath+"Wireshark-win64-2.2.4.exe")){$FileName += 'Wireshark-win64-2.2.4.exe'}
+If (-Not (Test-Path $ToolPath+"ipscan24.exe")){$FileName += 'ipscan24.exe'}
+If (-Not (Test-Path $ToolPath+"pingplotter_install.exe")){$FileName += 'pingplotter_install.exe'}
+If (-Not (Test-Path $ToolPath+"putty.exe")){$FileName += 'putty.exe'}
 
 # 4. Copy files from GitHUb
 If ($FileName.Count -gt 0) {
@@ -29,5 +29,5 @@ If ($FileName.Count -gt 0) {
 } # End If
 
 # 5. Move Putty front and center
-If (-Not (Test-Path (([Environment]::GetFolderPath("Desktop")) + "\Putty.exe"))){Copy-Item $ToolPath+"Putty.exe" -Destination ([Environment]::GetFolderPath("Desktop")) }
+If (-Not (Test-Path (([Environment]::GetFolderPath("Desktop"))+"\Putty.exe"))){Copy-Item $ToolPath+"Putty.exe" -Destination ([Environment]::GetFolderPath("Desktop")) }
 
