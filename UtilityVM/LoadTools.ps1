@@ -1,5 +1,5 @@
 # 1. Initialize
-$ToolPath = "C:\ACTools\"
+$ToolPath = "C:\ACTTools\"
 
 # 2. Create C:\Bin
 If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolPath | Out-Null}
