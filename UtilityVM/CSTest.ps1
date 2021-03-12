@@ -19,5 +19,5 @@ $FileName += 'WorkshopStep6.ps1'
 $FileName += 'WorkshopStep7.ps1'
 $uri = 'https://raw.githubusercontent.com/tracsman/vdcWorkshop/master/Firewall/Scripts/PowerShell/'
 ForEach ($File in $FileName) {
-    curl -O  "$uri$File"
+    Invoke-WebRequest -uri "$uri$File", "$ToolPath$File"
 }
