@@ -60,8 +60,8 @@ If (-Not (Test-Path $ScriptPath\Init.txt)){
 }
 
 Write-Host "  Validating File Variables:"
-If (Test-Path -Path $ScriptPath\init.txt) {
-        Get-Content $ScriptPath\init.txt | Foreach-Object{
+If (Test-Path -Path $ScriptPath\Init.txt) {
+        Get-Content $ScriptPath\Init.txt | Foreach-Object{
         $var = $_.Split('=')
         Try {New-Variable -Name $var[0].Trim() -Value $var[1].Trim() -ErrorAction Stop}
         Catch {Set-Variable -Name $var[0].Trim() -Value $var[1].Trim()}}}
@@ -73,8 +73,8 @@ Catch {
     Write-Host "                            Update SubID in the Init.txt file"
     $ErrorBit=$true
 }
-If ($ErrorBit) {Write-Host "                            " -NoNewline;$ErrorBit=$False}
-Write-Host "Valid, Context: $($Sub.Name)" -ForegroundColor Green
+If (-Not $ErrorBit) {Write-Host "Valid, Context: $($Sub.Name)" -ForegroundColor Green}
+$ErrorBit=$False
 
 Write-Host "    Checking Region........." -NoNewline
 If ($null -eq (Get-AzLocation | Where-Object Location -eq $ShortRegion)) {
@@ -91,19 +91,17 @@ Write-Host "Valid" -ForegroundColor Green
 
 Write-Host "  Checking Script Files....." -NoNewline
 Try {
-    Test-Path $ScriptPath\WorkshopStep1.ps1 -ErrorAction Stop
-    Test-Path $ScriptPath\WorkshopStep2.ps1 -ErrorAction Stop
-    Test-Path $ScriptPath\WorkshopStep3.ps1 -ErrorAction Stop
-    Test-Path $ScriptPath\WorkshopStep4.ps1 -ErrorAction Stop
-    Test-Path $ScriptPath\WorkshopStep5.ps1 -ErrorAction Stop
-    Test-Path $ScriptPath\WorkshopStep6.ps1 -ErrorAction Stop
+    ForEach ($File in $FileName) {
+        Test-Path $ScriptPath\$File -ErrorAction Stop | Out-Null
+    }
 }
 Catch {
     Write-Host "One or more script files Not Found" -ForegroundColor Red
     Write-Host "                            Rerun the intial script"
-    Return
+    $ErrorBit=$true
 }
-Write-Host "All present" -ForegroundColor Green
+If (-Not $ErrorBit) {Write-Host "All present" -ForegroundColor Green}
+$ErrorBit=$False
 
 # End nicely
 Write-Host (Get-Date)' - ' -NoNewline
