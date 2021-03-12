@@ -7,8 +7,18 @@ If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolP
 $FileContent = "CompanyID=" + $CompanyID + "`nSubID=" + $SubID
 Out-File -FilePath ".\Scripts\Init.txt" -Encoding ascii -InputObject $FileContent -Force
 
-# Copy, paste, run on local VM (Adjust local path as needed)
-$uri = 'https://raw.githubusercontent.com/tracsman/1DayLab/DontLook/UtilityVM/MicrosoftEdgeSetup.exe'
-$Local = ".\Scripts\MicrosoftEdgeSetup.exe"
-$webClient = new-object System.Net.WebClient
-$webClient.DownloadFile( $uri, $Local )
+# Download lab files
+$ToolPath = ".\Scripts\"
+$FileName = @()
+$FileName += 'WorkshopStep1.ps1'
+$FileName += 'WorkshopStep2.ps1'
+$FileName += 'WorkshopStep3.ps1'
+$FileName += 'WorkshopStep4.ps1'
+$FileName += 'WorkshopStep5.ps1'
+$FileName += 'WorkshopStep6.ps1'
+$FileName += 'WorkshopStep7.ps1'
+$uri = 'https://raw.githubusercontent.com/tracsman/vdcWorkshop/master/Firewall/Scripts/PowerShell/'
+ForEach ($File in $FileName) {
+    $webClient = new-object System.Net.WebClient
+    $webClient.DownloadFile( $uri + $File, $ToolPath + $File )
+}
