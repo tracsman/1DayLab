@@ -1,6 +1,6 @@
-"v5"
+"v6"
 # Check for folder, create if not found
-$ToolPath = ".\Scripts\" 
+$ToolPath = ".\Scripts" 
 If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolPath | Out-Null}
 
 
@@ -21,5 +21,5 @@ $FileName += 'WorkshopStep6.ps1'
 $FileName += 'WorkshopStep7.ps1'
 $uri = 'https://raw.githubusercontent.com/tracsman/vdcWorkshop/master/Firewall/Scripts/PowerShell/'
 ForEach ($File in $FileName) {
-    Invoke-WebRequest -Uri "$uri$File" -OutFile "$ToolPath$File"
+    Invoke-WebRequest -Uri "$uri$File" -OutFile "$ToolPath\$File"
 }
