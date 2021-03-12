@@ -10,13 +10,13 @@ Write-Host "Creating Scripts Folder" -ForegroundColor Cyan
 $ScriptPath = ".\Scripts" 
 If (-Not (Test-Path $ScriptPath)){New-Item -ItemType Directory -Force -Path $ScriptPath | Out-Null}
 
-# Create and fill Init.txt
+# Create and fill init.txt
 Write-Host
 Write-Host (Get-Date)' - ' -NoNewline
 Write-Host "Creating Init File" -ForegroundColor Cyan
-If (-Not (Test-Path $ScriptPath\Init.txt)){
+If (-Not (Test-Path $ScriptPath\init.txt)){
     $FileContent = "SubID=00000000-0000-0000-0000-000000000000" + "`nShortRegion=westus2" + "`nRGName=FWLab"
-    Out-File -FilePath "$ScriptPath\Init.txt" -Encoding ascii -InputObject $FileContent -Force
+    Out-File -FilePath "$ScriptPath\init.txt" -Encoding ascii -InputObject $FileContent -Force
 }
 
 # Download lab files
@@ -50,45 +50,6 @@ If (-Not (Test-Path $ScriptPath)){
     Write-Host "Good" -ForegroundColor Green
 }
 
-Write-Host "  Checking Init File........" -NoNewline
-If (-Not (Test-Path $ScriptPath\Init.txt)){
-    Write-Host "File Not Found" -ForegroundColor Red
-    Write-Host "                            Rerun the intial script"
-    Return
-} Else {
-    Write-Host "Good" -ForegroundColor Green
-}
-
-Write-Host "  Validating File Variables:"
-If (Test-Path -Path $ScriptPath\Init.txt) {
-        Get-Content $ScriptPath\Init.txt | Foreach-Object{
-        $var = $_.Split('=')
-        Try {New-Variable -Name $var[0].Trim() -Value $var[1].Trim() -ErrorAction Stop}
-        Catch {Set-Variable -Name $var[0].Trim() -Value $var[1].Trim()}}}
-
-Write-Host "    Checking SubID.........." -NoNewline
-Try {$Sub = (Set-AzContext -Subscription $SubID -ErrorAction Stop).Subscription}
-Catch {
-    Write-Host "SubID not valid or unauthorized" -ForegroundColor Red
-    Write-Host "                            Update SubID in the Init.txt file"
-    $ErrorBit=$true
-}
-If (-Not $ErrorBit) {Write-Host "Valid, Context: $($Sub.Name)" -ForegroundColor Green}
-$ErrorBit=$False
-
-Write-Host "    Checking Region........." -NoNewline
-If ($null -eq (Get-AzLocation | Where-Object Location -eq $ShortRegion)) {
-    Write-Host "ShortRegion not valid or unauthorized" -ForegroundColor Red
-    Write-Host "                            Update ShortRegion in the Init.txt file"
-} Else {
-    Write-Host "Valid" -ForegroundColor Green
-}
-
-Write-Host "    Checking RG Name........" -NoNewline
-If ($RGName.Length -le 3) {"Bad short or don't exist"}
-ElseIf ($RGName -contains " ") {"Bad Space"}
-Write-Host "Valid" -ForegroundColor Green
-
 Write-Host "  Checking Script Files....." -NoNewline
 Try {
     ForEach ($File in $FileName) {
@@ -102,6 +63,47 @@ Catch {
 }
 If (-Not $ErrorBit) {Write-Host "All present" -ForegroundColor Green}
 $ErrorBit=$False
+
+Write-Host "  Checking Init File........" -NoNewline
+If (-Not (Test-Path $ScriptPath\init.txt)){
+    Write-Host "File Not Found" -ForegroundColor Red
+    Write-Host "                            Rerun the intial script"
+    Return
+} Else {
+    Write-Host "Good" -ForegroundColor Green
+}
+
+Write-Host "  Validating File Variables:"
+If (Test-Path -Path $ScriptPath\init.txt) {
+        Get-Content $ScriptPath\init.txt | Foreach-Object{
+        $var = $_.Split('=')
+        Try {New-Variable -Name $var[0].Trim() -Value $var[1].Trim() -ErrorAction Stop}
+        Catch {Set-Variable -Name $var[0].Trim() -Value $var[1].Trim()}}}
+
+Write-Host "    Checking SubID.........." -NoNewline
+Try {$Sub = (Set-AzContext -Subscription $SubID -ErrorAction Stop).Subscription}
+Catch {
+    Write-Host "SubID not valid or unauthorized" -ForegroundColor Red
+    Write-Host "                            Update SubID in the init.txt file"
+    $ErrorBit=$true
+}
+If (-Not $ErrorBit) {Write-Host "Valid, Context: $($Sub.Name)" -ForegroundColor Green}
+$ErrorBit=$False
+
+Write-Host "    Checking Region........." -NoNewline
+If ($null -eq (Get-AzLocation | Where-Object Location -eq $ShortRegion)) {
+    Write-Host "ShortRegion not valid or unauthorized" -ForegroundColor Red
+    Write-Host "                            Update ShortRegion in the init.txt file"
+} Else {
+    Write-Host "Valid" -ForegroundColor Green
+}
+
+Write-Host "    Checking RG Name........" -NoNewline
+If ($RGName.Length -le 3) {"Bad short or don't exist"}
+ElseIf ($RGName -contains " ") {"Bad Space"}
+Write-Host "Valid" -ForegroundColor Green
+
+
 
 # End nicely
 Write-Host (Get-Date)' - ' -NoNewline
