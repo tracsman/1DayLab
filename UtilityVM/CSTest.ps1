@@ -1,3 +1,7 @@
+# Check for folder, create if not found
+$ToolPath = ".\Scripts\" 
+If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolPath | Out-Null}
+
 
 # Update Init.txt with Company Number
 $FileContent = "CompanyID=" + $CompanyID + "`nSubID=" + $SubID
