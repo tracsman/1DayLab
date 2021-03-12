@@ -39,6 +39,7 @@ ForEach ($File in $FileName) {
 Write-Host
 Write-Host (Get-Date)' - ' -NoNewline
 Write-Host "Validating environment:" -ForegroundColor Cyan
+$ErrorBit=$False
 
 Write-Host "  Checking Script Folder...." -NoNewline
 If (-Not (Test-Path $ScriptPath)){
@@ -70,15 +71,15 @@ Try {$Sub = (Set-AzContext -Subscription $SubID -ErrorAction Stop).Subscription}
 Catch {
     Write-Host "SubID not valid or unauthorized" -ForegroundColor Red
     Write-Host "                            Update SubID in the Init.txt file"
-    Return
+    $ErrorBit=$true
 }
+If ($ErrorBit) {Write-Host "                            " -NoNewline;$ErrorBit=$False}
 Write-Host "Valid, Context: $($Sub.Name)" -ForegroundColor Green
 
 Write-Host "    Checking Region........." -NoNewline
 If ($null -eq (Get-AzLocation | Where-Object Location -eq $ShortRegion)) {
     Write-Host "ShortRegion not valid or unauthorized" -ForegroundColor Red
     Write-Host "                            Update ShortRegion in the Init.txt file"
-    Return
 } Else {
     Write-Host "Valid" -ForegroundColor Green
 }
@@ -99,6 +100,7 @@ Try {
 }
 Catch {
     Write-Host "One or more script files Not Found" -ForegroundColor Red
+    Write-Host "                            Rerun the intial script"
     Return
 }
 Write-Host "All present" -ForegroundColor Green
