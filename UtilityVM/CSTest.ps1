@@ -1,15 +1,16 @@
-"v4"
+"v5"
 # Check for folder, create if not found
 $ToolPath = ".\Scripts\" 
 If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolPath | Out-Null}
 
 
 # Update Init.txt with Company Number
-$FileContent = "CompanyID=" + $CompanyID + "`nSubID=" + $SubID
-Out-File -FilePath ".\Scripts\Init.txt" -Encoding ascii -InputObject $FileContent -Force
+If (-Not (Test-Path $ToolPath\Init.txt)){
+    $FileContent = "CompanyID=" + $CompanyID + "`nSubID=" + $SubID
+    Out-File -FilePath "$ToolPath\Init.txt" -Encoding ascii -InputObject $FileContent -Force
+}
 
 # Download lab files
-$ToolPath = ".\Scripts\"
 $FileName = @()
 $FileName += 'WorkshopStep1.ps1'
 $FileName += 'WorkshopStep2.ps1'
