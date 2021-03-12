@@ -43,6 +43,7 @@ Write-Host "Validating environment:" -ForegroundColor Cyan
 Write-Host "  Checking Script Folder...." -NoNewline
 If (-Not (Test-Path $ScriptPath)){
     Write-Host "Folder not found" -ForegroundColor Red
+    Write-Host "                            Rerun the intial script"
     Return
 } Else {
     Write-Host "Good" -ForegroundColor Green
@@ -51,6 +52,7 @@ If (-Not (Test-Path $ScriptPath)){
 Write-Host "  Checking Init File........" -NoNewline
 If (-Not (Test-Path $ScriptPath\Init.txt)){
     Write-Host "File Not Found" -ForegroundColor Red
+    Write-Host "                            Rerun the intial script"
     Return
 } Else {
     Write-Host "Good" -ForegroundColor Green
@@ -67,6 +69,7 @@ Write-Host "    Checking SubID.........." -NoNewline
 Try {$Sub = (Set-AzContext -Subscription $SubID -ErrorAction Stop).Subscription}
 Catch {
     Write-Host "SubID not valid or unauthorized" -ForegroundColor Red
+    Write-Host "                            Update SubID in the Init.txt file"
     Return
 }
 Write-Host "Valid, Context: $($Sub.Name)" -ForegroundColor Green
@@ -74,6 +77,7 @@ Write-Host "Valid, Context: $($Sub.Name)" -ForegroundColor Green
 Write-Host "    Checking Region........." -NoNewline
 If ($null -eq (Get-AzLocation | Where-Object Location -eq $ShortRegion)) {
     Write-Host "ShortRegion not valid or unauthorized" -ForegroundColor Red
+    Write-Host "                            Update ShortRegion in the Init.txt file"
     Return
 } Else {
     Write-Host "Valid" -ForegroundColor Green
