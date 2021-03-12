@@ -1,3 +1,4 @@
+"v3"
 # Check for folder, create if not found
 $ToolPath = ".\Scripts\" 
 If (-Not (Test-Path $ToolPath)){New-Item -ItemType Directory -Force -Path $ToolPath | Out-Null}
